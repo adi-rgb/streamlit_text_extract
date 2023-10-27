@@ -1,6 +1,6 @@
 import streamlit as st
 import os
-import docx
+import csv
 
 # Function to extract the first 250 characters from a text file
 def extract_text_from_file(file):
@@ -8,16 +8,8 @@ def extract_text_from_file(file):
         content = f.read()
         return content[:250]
 
-# Function to generate a Word document from extracted text
-def generate_word_document(texts):
-    doc = docx.Document()
-    for i, text in enumerate(texts):
-        doc.add_paragraph(f"Text from File {i + 1}:")
-        doc.add_paragraph(text)
-    return doc
-
 # Streamlit interface
-st.title("Text File Extractor and Word Document Generator")
+st.title("Text File Extractor and CSV Generator")
 
 uploaded_files = st.file_uploader("Upload multiple .txt files", type=["txt"], accept_multiple_files=True)
 
@@ -28,22 +20,27 @@ if uploaded_files:
         text = extract_text_from_file(uploaded_file)
         text_contents.append(text)
 
-    if st.button("Generate Word Document"):
-        doc = generate_word_document(text_contents)
-        doc.save("generated_document.docx")
-        st.success("Word document generated successfully! You can download it below.")
+    if st.button("Generate CSV"):
+        csv_filename = "generated_data.csv"
+        with open(csv_filename, 'w', newline='') as csv_file:
+            csv_writer = csv.writer(csv_file)
+            csv_writer.writerow(['File Name', 'Extracted Text'])
+            for i, text in enumerate(text_contents):
+                csv_writer.writerow([uploaded_files[i].name, text])
+        st.success("CSV file generated successfully! You can download it below.")
 
-        # Download link for the generated Word document
-        with open("generated_document.docx", "rb") as docx_file:
+        # Download link for the generated CSV file
+        with open(csv_filename, "rb") as csv_file:
             st.download_button(
-                label="Download Word Document",
-                data=docx_file,
-                key="word_doc",
-                file_name="generated_document.docx",
+                label="Download CSV",
+                data=csv_file,
+                key="csv_download",
+                file_name=csv_filename,
             )
+
 else:
     st.info("Please upload some .txt files.")
 
-# Cleanup: remove the generated Word document file
-if os.path.exists("generated_document.docx"):
-    os.remove("generated_document.docx")
+# Cleanup: remove the generated CSV file
+if os.path.exists("generated_data.csv"):
+    os.remove("generated_data.csv")

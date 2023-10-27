@@ -2,11 +2,14 @@ import streamlit as st
 import os
 import csv
 from io import BytesIO
+import re
 
-# Function to extract the first 250 characters from a text file
+# Function to extract the first 250 words from a text file
 def extract_text_from_file(uploaded_file):
     content = uploaded_file.read().decode('utf-8')
-    return content[:250]
+    words = re.findall(r'\b\w+\b', content)
+    extracted_text = " ".join(words[:250])
+    return extracted_text
 
 # Streamlit interface
 st.title("Text File Extractor and CSV Generator")
